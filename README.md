@@ -1,6 +1,6 @@
 # Puchi Infra
 
-Infrastructure as Code cho Puchi platform — ArgoCD GitOps trên K3s.
+Infrastructure as Code cho Puchi platform — **ArgoCD GitOps** trên K3s.
 
 ## Cluster
 
@@ -10,11 +10,36 @@ Infrastructure as Code cho Puchi platform — ArgoCD GitOps trên K3s.
 | k3s-node2 | 192.168.100.202 | control-plane, etcd |
 | k3s-node3 | 192.168.100.203 | control-plane, etcd |
 
-K3s v1.35.5, 3 node HA, storage: `local-path` (rancher.io).
+**K3s v1.35.5** — 3 node HA, storage: `local-path`, ingress: Traefik.
 
-## Services đã có sẵn (dùng chung)
+## Cấu trúc repo
 
-Các service này đang chạy cho dự án Arda, Puchi sẽ dùng chung:
+```
+puchi-infra/
+├── argocd/
+│   ├── projects/infra.yaml       # AppProject: puchi
+│   └── apps/
+│       ├── root.yaml             # App of Apps root
+│       ├── repo-creds.yaml       # GitHub PAT
+│       ├── puchi-db.yaml         # PostgreSQL cluster
+│       ├── supertokens.yaml      # Supertoken auth
+│       └── envoy-gateway.yaml    # Envoy Gateway
+├── infra/
+│   └── postgres-cluster/        # CloudNativePG Cluster CRDs
+├── scripts/
+│   ├── bootstrap.sh             # 1-command ArgoCD bootstrap
+│   ├── setup-garage.sh          # Garage buckets + key
+│   └── setup-nats.sh            # NATS streams
+├── .cursor/rules/
+│   ├── project.mdc              # Project overview
+│   ├── argocd.mdc               # App of Apps conventions
+│   └── k8s-manifests.mdc        # K8s manifest conventions
+└── README.md
+```
+
+## Services
+
+### Shared (dùng chung với Arda)
 
 | Service | Namespace | Cách dùng cho Puchi |
 |---------|-----------|---------------------|
@@ -22,60 +47,39 @@ Các service này đang chạy cho dự án Arda, Puchi sẽ dùng chung:
 | **NATS** | platform | Subject prefix `puchi.*` |
 | **Garage (S3)** | platform | Bucket `puchi-*` |
 | **Valkey (Redis)** | platform | DB index riêng |
-| **Traefik** | kube-system | Ingress controller, dùng TLS terminate |
+| **Traefik** | kube-system | Ingress controller |
 | **ArgoCD** | argocd | GitOps deploy |
-| **Cloudflare Tunnel** | platform | Expose service ra internet |
+| **Cloudflare Tunnel** | platform | Expose ra internet |
 
-## Services cần deploy cho Puchi
+### Deployed cho Puchi
 
 | Service | Chart | Namespace | Trạng thái |
 |---------|-------|-----------|------------|
-| PostgreSQL cluster | CloudNativePG CRD | puchi-db | 📝 Code sẵn |
-| Supertoken | supertokens/supertokens | puchi-infra | 📝 Code sẵn |
-| Envoy Gateway | envoy/gateway-helm | envoy-gateway-system | 📝 Code sẵn |
-
-## Cấu trúc repo
-
-```
-puchi-infra/
-├── argocd/
-│   ├── projects/infra.yaml      # AppProject: puchi
-│   └── apps/
-│       ├── root.yaml             # App of Apps root
-│       ├── puchi-db.yaml         # PostgreSQL cluster
-│       ├── supertokens.yaml      # Supertoken auth
-│       └── envoy-gateway.yaml    # Envoy Gateway
-├── infra/
-│   └── postgres-cluster/        # CloudNativePG Cluster CRDs
-├── scripts/
-│   ├── bootstrap.sh             # ArgoCD bootstrap
-│   ├── setup-garage.sh          # Tạo bucket Garage cho Puchi
-│   └── setup-nats.sh            # Tạo NATS stream cho Puchi
-└── README.md
-```
+| PostgreSQL 18 | CloudNativePG CRD | puchi-db | ✅ Running |
+| Supertoken | supertokens/helm | puchi-infra | ✅ Deployed |
+| Envoy Gateway | envoy/gateway-helm | envoy-gateway-system | ✅ Deployed |
 
 ## Triển khai
 
-### 1. ArgoCD bootstrap
+### Bootstrap
 
 ```bash
-# SSH vào node K3s
 ssh hoan@192.168.100.201
 
-# Apply project + root app
+# Apply ArgoCD project + root app
 kubectl apply -f argocd/projects/
 kubectl apply -f argocd/apps/root.yaml
 ```
 
-ArgoCD sẽ tự động sync tất cả Application trong `argocd/apps/`.
+ArgoCD sẽ tự động sync tất cả Application.
 
-### 2. Setup Garage buckets
+### Setup Garage buckets
 
 ```bash
 bash scripts/setup-garage.sh
 ```
 
-### 3. Setup NATS streams
+### Setup NATS streams
 
 ```bash
 bash scripts/setup-nats.sh
@@ -104,7 +108,7 @@ subject prefix: puchi.*
 ```
 endpoint: http://garage.platform.svc.cluster.local:3900
 region: puchi
-buckets: puchi-audio, puchi-images, puchi-avatars
+buckets: puchi-audio, puchi-images, puchi-avatars, puchi-backups
 ```
 
 ### Valkey (Redis)
@@ -112,12 +116,12 @@ buckets: puchi-audio, puchi-images, puchi-avatars
 ```
 host: valkey-node.platform.svc.cluster.local
 port: 6379
-db: 1 (or higher, avoid conflict with Arda)
+db: 1 (avoid conflict with Arda)
 ```
 
 ## Domains
 
 - `auth.puchi.io.vn` — Supertoken API
-- `api.puchi.io.vn` — Envoy Gateway (backend API)
+- `api.puchi.io.vn` — Envoy Gateway
 
-> **Note:** Cluster chưa có cert-manager. HTTPS được xử lý qua Cloudflare Tunnel ở layer ngoài.
+> **Note:** HTTPS qua Cloudflare Tunnel, chưa có cert-manager.
