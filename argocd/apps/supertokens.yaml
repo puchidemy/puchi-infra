@@ -17,6 +17,12 @@ spec:
         config:
           apiKeys:
             - change-in-production-please
+        service:
+          type: NodePort
+          ports:
+            - port: 3567
+              targetPort: 3567
+              nodePort: 30567
         ingress:
           enabled: true
           className: traefik
