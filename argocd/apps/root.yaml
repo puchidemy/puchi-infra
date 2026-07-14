@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: infra-root
+  name: puchi-root
   namespace: argocd
 spec:
-  project: infra
+  project: puchi
   source:
     repoURL: 'https://github.com/puchidemy/puchi-infra'
     targetRevision: main

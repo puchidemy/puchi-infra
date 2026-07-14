@@ -1,41 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: infra
-  namespace: argocd
-spec:
-  description: Puchi infrastructure services
-  sourceRepos:
-    - 'https://github.com/puchidemy/puchi-infra'
-    - 'https://cloudnative-pg.github.io/charts'
-    - 'https://charts.bitnami.com/bitnami'
-    - 'https://nats-io.github.io/k8s/helm/charts'
-    - 'https://helm.supertokens.io'
-    - 'https://istio-release.storage.googleapis.com/charts'
-    - 'https://prometheus-community.github.io/helm-charts'
-    - 'https://gateway.envoyproxy.io/helm'
-  destinations:
-    - namespace: '*'
-      server: 'https://kubernetes.default.svc'
-  clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
-  namespaceResourceWhitelist:
-    - group: '*'
-      kind: '*'
----
-apiVersion: argoproj.io/v1alpha1
-kind: AppProject
-metadata:
   name: puchi
   namespace: argocd
 spec:
-  description: Puchi backend services
+  description: Puchi platform services
   sourceRepos:
-    - 'https://github.com/puchidemy/puchi-backend'
     - 'https://github.com/puchidemy/puchi-infra'
+    - 'https://github.com/puchidemy/puchi-backend'
+    - 'https://helm.supertokens.io'
+    - 'https://gateway.envoyproxy.io/helm'
   destinations:
-    - namespace: '*'
+    - namespace: puchi-*
+      server: 'https://kubernetes.default.svc'
+    - namespace: envoy-gateway-system
       server: 'https://kubernetes.default.svc'
   clusterResourceWhitelist:
     - group: '*'

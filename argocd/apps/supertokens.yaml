@@ -4,7 +4,7 @@ metadata:
   name: supertokens
   namespace: argocd
 spec:
-  project: infra
+  project: puchi
   source:
     chart: supertokens
     repoURL: 'https://helm.supertokens.io'
@@ -13,16 +13,10 @@ spec:
       values: |
         image:
           tag: 9.3.0
-        replicaCount: 2
+        replicaCount: 1
         config:
           apiKeys:
             - change-in-production-please
-          coreDb:
-            host: supertokens-db-rw.puchi-db.svc.cluster.local
-            port: 5432
-            database: supertokens
-            userName: supertokens
-            password: sup3rt0k3ns
         ingress:
           enabled: true
           className: traefik
@@ -47,5 +41,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-  dependsOn:
-    - postgres-cluster
