@@ -1,0 +1,103 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: supertokens-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  storage:
+    size: 10Gi
+  enableSuperuserAccess: true
+  bootstrap:
+    initdb:
+      database: supertokens
+      owner: supertokens
+      secret:
+        name: supertokens-db-secret
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: puchi-core-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  storage:
+    size: 20Gi
+  enableSuperuserAccess: false
+  bootstrap:
+    initdb:
+      database: puchi_core
+      owner: puchi
+      secret:
+        name: puchi-core-db-secret
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: puchi-content-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  storage:
+    size: 20Gi
+  enableSuperuserAccess: false
+  bootstrap:
+    initdb:
+      database: puchi_content
+      owner: puchi
+      secret:
+        name: puchi-content-db-secret
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: puchi-grading-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  storage:
+    size: 10Gi
+  enableSuperuserAccess: false
+  bootstrap:
+    initdb:
+      database: puchi_grading
+      owner: puchi
+      secret:
+        name: puchi-grading-db-secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: supertokens-db-secret
+type: kubernetes.io/basic-auth
+stringData:
+  username: supertokens
+  password: sup3rt0k3ns
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puchi-core-db-secret
+type: kubernetes.io/basic-auth
+stringData:
+  username: puchi
+  password: puchi-db-prod-change-me
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puchi-content-db-secret
+type: kubernetes.io/basic-auth
+stringData:
+  username: puchi
+  password: puchi-db-prod-change-me
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puchi-grading-db-secret
+type: kubernetes.io/basic-auth
+stringData:
+  username: puchi
+  password: puchi-db-prod-change-me

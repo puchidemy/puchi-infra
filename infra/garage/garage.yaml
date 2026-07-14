@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: puchi-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: garage-data
+  namespace: puchi-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garage
+  namespace: puchi-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: garage
+  template:
+    metadata:
+      labels:
+        app: garage
+    spec:
+      containers:
+        - name: garage
+          image: dxflrs/garage:v1.0.1
+          ports:
+            - containerPort: 3900
+              name: s3-api
+            - containerPort: 3901
+              name: admin
+          volumeMounts:
+            - name: data
+              mountPath: /garage/data
+            - name: config
+              mountPath: /garage/config
+          env:
+            - name: GARAGE_MODE
+              value: server
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: garage-data
+        - name: config
+          configMap:
+            name: garage-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: garage-config
+  namespace: puchi-storage
+data:
+  garage.toml: |
+    metadata_dir = "/garage/data/meta"
+    data_dir = "/garage/data/blocks"
+
+    rpc_bind_addr = "[::]:3901"
+    rpc_public_addr = "garage.puchi-infra.svc.cluster.local:3901"
+    rpc_secret = "change-me-garage-rpc-secret"
+
+    [s3_api]
+      s3_region = "puchi"
+      api_bind_addr = "[::]:3900"
+      root_domain = ".s3.puchi.io.vn"
+
+    [s3_web]
+      bind_addr = "[::]:3902"
+      root_domain = ".web.puchi.io.vn"
+
+    [admin]
+      api_bind_addr = "[::]:3903"
+      admin_token = "change-me-garage-admin-token"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: garage
+  namespace: puchi-storage
+spec:
+  selector:
+    app: garage
+  ports:
+    - name: s3-api
+      port: 3900
+      targetPort: 3900
+    - name: admin
+      port: 3903
+      targetPort: 3903

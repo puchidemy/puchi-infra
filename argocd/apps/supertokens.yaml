@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: supertokens
+  namespace: argocd
+spec:
+  project: infra
+  source:
+    chart: supertokens
+    repoURL: 'https://helm.supertokens.io'
+    targetRevision: 0.7.x
+    helm:
+      values: |
+        image:
+          tag: 9.3.0
+        replicaCount: 2
+        config:
+          apiKeys:
+            - change-in-production-please
+          coreDb:
+            host: supertokens-db-rw.puchi-db.svc.cluster.local
+            port: 5432
+            database: supertokens
+            userName: supertokens
+            password: sup3rt0k3ns
+        ingress:
+          enabled: true
+          className: traefik
+          hosts:
+            - host: auth.puchi.io.vn
+              paths:
+                - path: /
+                  pathType: Prefix
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: puchi-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  dependsOn:
+    - postgres-cluster
