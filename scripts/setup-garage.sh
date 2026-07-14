@@ -1,41 +1,31 @@
-#!/usr/bin/env bash
-# Setup Garage buckets for Puchi
-# Run on K3s node after Garage is deployed
+#!/bin/bash
+# Setup Garage buckets for Puchi via admin API
+# Garage v2.x - uses /v2/CreateBucket and /v2/ListBuckets endpoints
+set -e
 
-set -euo pipefail
+GARAGE_IP=$(kubectl get svc -n platform garage -o jsonpath='{.spec.clusterIP}')
+# Get admin token from garage configmap
+ADMIN_TOKEN=$(kubectl get cm -n platform garage-config -o jsonpath='{.data.garage\.toml}' | grep 'admin_token' | cut -d'"' -f2)
+API="http://$GARAGE_IP:3903"
 
-GARAGE_NS="platform"
-GARAGE_POD="garage-0"
-GARAGE_ADMIN_TOKEN="change-me-garage-admin-token"
+echo "Garage admin API: $API"
+echo ""
 
-echo "=== Creating Puchi buckets in Garage ==="
-
-# Garage admin API is on port 3903 inside the cluster
-GARAGE_ENDPOINT="http://garage.$GARAGE_NS.svc.cluster.local:3903"
-
-# Create buckets
+echo "=== Creating Puchi buckets ==="
 for bucket in puchi-audio puchi-images puchi-avatars puchi-backups; do
-  echo "Creating bucket: $bucket"
-  kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- \
-    /garage bucket create "$bucket" --endpoint "$GARAGE_ENDPOINT"
+  echo "  Bucket: $bucket"
+  result=$(curl -s -X POST \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"globalAlias\": \"$bucket\"}" \
+    "$API/v2/CreateBucket")
+  echo "    $result"
 done
 
-# Create access key for Puchi app
-echo "Creating access key for puchi-app..."
-KEY_OUTPUT=$(kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- \
-  /garage key create puchi-app --endpoint "$GARAGE_ENDPOINT")
+echo ""
+echo "=== Listing Puchi buckets ==="
+curl -s -H "Authorization: Bearer $ADMIN_TOKEN" "$API/v2/ListBuckets" | python3 -m json.tool 2>/dev/null || \
+curl -s -H "Authorization: Bearer $ADMIN_TOKEN" "$API/v2/ListBuckets"
 
-echo "$KEY_OUTPUT"
-
-# Allow access keys to buckets
-for bucket in puchi-audio puchi-images puchi-avatars; do
-  kubectl exec -n "$GARAGE_NS" "$GARAGE_POD" -- \
-    /garage bucket allow "$bucket" \
-      --read --write --owner \
-      --key puchi-app \
-      --endpoint "$GARAGE_ENDPOINT"
-  echo "  Allowed puchi-app to $bucket"
-done
-
+echo ""
 echo "=== Garage setup complete ==="
-echo "Use the Access Key ID and Secret Key above in Puchi backend config."
