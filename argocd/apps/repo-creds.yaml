@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: puchi-github-repo-creds
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds
+stringData:
+  type: git
+  url: https://github.com/puchidemy
+  username: hoan02
+  password: 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
+type: Opaque
