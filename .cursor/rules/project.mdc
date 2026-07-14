@@ -55,5 +55,5 @@ puchi-infra/
 | Service | Chart | Namespace |
 |---------|-------|-----------|
 | PostgreSQL | CloudNativePG CRD | puchi-db |
-| Supertoken | supertokens/helm | puchi-infra |
+| Supertokens | supertokens/helm | puchi-infra |
 | Envoy Gateway | envoy/gateway-helm | envoy-gateway-system |
