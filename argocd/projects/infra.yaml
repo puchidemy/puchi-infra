@@ -11,6 +11,8 @@ spec:
     - 'https://helm.supertokens.io'
     - 'https://gateway.envoyproxy.io/helm'
   destinations:
+    - namespace: argocd
+      server: 'https://kubernetes.default.svc'
     - namespace: puchi-*
       server: 'https://kubernetes.default.svc'
     - namespace: envoy-gateway-system
