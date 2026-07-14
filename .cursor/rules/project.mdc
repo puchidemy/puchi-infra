@@ -1,0 +1,59 @@
+---
+description: Tổng quan Puchi Infrastructure — K3s + ArgoCD
+alwaysApply: true
+---
+
+# Puchi Infrastructure
+
+Infrastructure as Code — ArgoCD GitOps trên K3s 3-node HA.
+
+## Cluster
+
+| Node | IP | Role |
+|------|-----|------|
+| k3s-node1 | 192.168.100.201 | control-plane, etcd |
+| k3s-node2 | 192.168.100.202 | control-plane, etcd |
+| k3s-node3 | 192.168.100.203 | control-plane, etcd |
+
+K3s v1.35.5, storage: `local-path`, ingress: Traefik.
+
+## Cấu trúc repo
+
+```
+puchi-infra/
+├── argocd/
+│   ├── projects/infra.yaml     # AppProject: puchi
+│   └── apps/
+│       ├── root.yaml            # App of Apps root
+│       ├── repo-creds.yaml      # GitHub token
+│       ├── puchi-db.yaml        # PostgreSQL clusters
+│       ├── supertokens.yaml     # Supertoken auth
+│       └── envoy-gateway.yaml   # Envoy Gateway
+├── infra/
+│   └── postgres-cluster/       # CloudNativePG CRDs
+├── scripts/
+│   ├── bootstrap.sh            # ArgoCD bootstrap
+│   ├── setup-garage.sh         # Garage buckets
+│   └── setup-nats.sh           # NATS streams
+└── README.md
+```
+
+## Services dùng chung với Arda
+
+| Service | Namespace | Mô tả |
+|---------|-----------|-------|
+| CloudNativePG | cnpg-system | PostgreSQL operator |
+| NATS | platform | Message broker, prefix `puchi.*` |
+| Garage | platform | S3 storage, bucket `puchi-*` |
+| Valkey (Redis) | platform | Cache, DB index riêng |
+| Traefik | kube-system | Ingress controller |
+| ArgoCD | argocd | GitOps deploy |
+| Cloudflare Tunnel | platform | Expose ra internet |
+
+## Services riêng của Puchi
+
+| Service | Chart | Namespace |
+|---------|-------|-----------|
+| PostgreSQL | CloudNativePG CRD | puchi-db |
+| Supertoken | supertokens/helm | puchi-infra |
+| Envoy Gateway | envoy/gateway-helm | envoy-gateway-system |

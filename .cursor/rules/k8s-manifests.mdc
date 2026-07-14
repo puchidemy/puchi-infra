@@ -1,0 +1,56 @@
+---
+description: Kubernetes manifests conventions
+globs: infra/**/*.yaml
+alwaysApply: false
+---
+
+# K8s Manifests Conventions
+
+## CloudNativePG Cluster
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-{app}
+  namespace: puchi-db
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.0
+  storage:
+    size: 10Gi
+    storageClass: local-path
+  bootstrap:
+    initdb:
+      database: {db_name}
+      owner: {username}
+      secret:
+        name: pg-{app}-secret
+```
+
+## Garage buckets
+
+Tạo bucket qua Garage v2 admin API:
+
+```bash
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"globalAlias":"puchi-{bucket}"}' \
+  http://{garage}:3903/v2/CreateBucket
+```
+
+## NATS streams
+
+Tạo stream với subject prefix `puchi.*`:
+
+```bash
+nats str add puchi-{name} \
+  --subjects "puchi.{domain}.>" \
+  --storage file \
+  --max-bytes=1GB
+```
+
+## Labels
+
+- Tất cả resource gán label `app: puchi`
+- Namespace pattern: `puchi-{env}` (puchi-db, puchi-infra, puchi-app)

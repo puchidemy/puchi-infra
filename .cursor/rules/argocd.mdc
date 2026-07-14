@@ -1,0 +1,48 @@
+---
+description: ArgoCD App of Apps conventions
+globs: argocd/**/*.yaml
+alwaysApply: false
+---
+
+# ArgoCD Conventions
+
+## App of Apps pattern
+
+Root app (`root.yaml`) quản lý tất cả child apps trong `argocd/apps/`.
+
+## Application spec
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {app-name}
+  namespace: argocd
+spec:
+  project: puchi
+  source:
+    repoURL: 'https://github.com/puchidemy/puchi-infra'
+    targetRevision: main
+    path: infra/{component}
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: {namespace}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+## Project
+
+- Mỗi component thuộc project `puchi`
+- Destination namespace phải nằm trong whitelist của project
+- Các source repo phải được khai báo trong `sourceRepos`
+
+## Secrets
+
+- Repo credentials: dùng `repo-creds` secret với label `argocd.argoproj.io/secret-type: repo-creds`
+- DB secrets: `kubernetes.io/basic-auth` type
+- Không commit plaintext password — dùng sealed secrets hoặc SOPS sau
