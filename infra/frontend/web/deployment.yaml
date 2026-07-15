@@ -24,7 +24,9 @@ spec:
             - name: NEXT_PUBLIC_API_URL
               value: "https://api.puchi.io.vn"
             - name: SUPERTOKENS_CONNECTION_URI
-              value: "http://st-core.puchi-infra.svc.cluster.local:3567"
+              value: "http://st-core-svc.puchi-infra.svc.cluster.local:3567"
+            - name: SUPERTOKENS_API_KEY
+              value: "change-in-production-please"
             - name: NODE_ENV
               value: "production"
           resources:
