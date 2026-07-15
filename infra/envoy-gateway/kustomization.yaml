@@ -6,7 +6,5 @@ resources:
   - envoyproxy.yaml
   - reference-grant.yaml
   - puchi-api-service.yaml
-  - auth-httproute.yaml
-  - auth-securitypolicy.yaml
   - api-httproute.yaml
   - api-securitypolicy.yaml
