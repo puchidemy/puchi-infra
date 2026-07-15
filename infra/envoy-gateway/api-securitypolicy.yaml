@@ -1,0 +1,41 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: puchi-api-security
+  namespace: envoy-gateway-system
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: puchi-api-routes
+  cors:
+    allowOrigins:
+      - "https://puchi.io.vn"
+      - "http://localhost:3000"
+    allowMethods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    allowHeaders:
+      - content-type
+      - authorization
+      - cookie
+      - x-requested-with
+      - rid
+      - anti-csrftoken-a-d
+    exposeHeaders:
+      - content-type
+    allowCredentials: true
+  extAuth:
+    http:
+      backendRef:
+        name: st-core-svc
+        namespace: puchi-infra
+        port: 3567
+      path: /session/verify
+      headersToBackend:
+        - cookie
+        - authorization

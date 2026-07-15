@@ -3,8 +3,10 @@ kind: Kustomization
 resources:
   - gatewayclass.yaml
   - gateway.yaml
-  - httproute.yaml
   - envoyproxy.yaml
   - reference-grant.yaml
   - puchi-api-service.yaml
-  - security-policy.yaml
+  - auth-httproute.yaml
+  - auth-securitypolicy.yaml
+  - api-httproute.yaml
+  - api-securitypolicy.yaml
