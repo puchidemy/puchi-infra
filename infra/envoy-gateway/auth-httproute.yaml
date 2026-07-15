@@ -12,6 +12,6 @@ spec:
             type: PathPrefix
             value: /auth
       backendRefs:
-        - name: st-core-svc
-          namespace: puchi-infra
-          port: 3567
+        - name: core-service
+          namespace: puchi-backend
+          port: 8000
