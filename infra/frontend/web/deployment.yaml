@@ -13,9 +13,11 @@ spec:
       labels:
         app: web
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull
       containers:
         - name: web
-          image: ghcr.io/puchidemy/puchi-frontend:git-ae47bc8
+          image: ghcr.io/puchidemy/puchi-frontend:latest
           ports:
             - containerPort: 3000
           env:
