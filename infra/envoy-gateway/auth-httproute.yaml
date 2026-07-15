@@ -10,8 +10,16 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /api/auth
+      backendRefs:
+        - name: web-service
+          namespace: puchi-frontend
+          port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
             value: /auth
       backendRefs:
-        - name: core-service
-          namespace: puchi-backend
-          port: 8000
+        - name: web-service
+          namespace: puchi-frontend
+          port: 3000
