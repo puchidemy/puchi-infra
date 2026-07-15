@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: ghcr.io/puchidemy/puchi-frontend:git-90aed7a
+          image: ghcr.io/puchidemy/puchi-frontend:git-3d8edc6
           ports:
             - containerPort: 3000
           env:
