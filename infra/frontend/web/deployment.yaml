@@ -23,8 +23,8 @@ spec:
               value: "https://puchi.io.vn"
             - name: NEXT_PUBLIC_API_URL
               value: "https://api.puchi.io.vn"
-            - name: NEXT_PUBLIC_SUPERTOKENS_CONNECTION_URI
-              value: "http://auth.puchi.io.vn/auth"
+            - name: SUPERTOKENS_CONNECTION_URI
+              value: "http://st-core.puchi-infra.svc.cluster.local:3567"
             - name: NODE_ENV
               value: "production"
           resources:
