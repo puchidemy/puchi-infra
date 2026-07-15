@@ -10,6 +10,16 @@ alwaysApply: false
 
 Root app (`root.yaml`) quản lý tất cả child apps trong `argocd/apps/`.
 
+Current child apps:
+| App | Path | Namespace |
+|-----|------|-----------|
+| puchi-root | argocd/apps | argocd |
+| puchi-db | infra/postgres-cluster | puchi-db |
+| supertokens | infra/supertokens | puchi-infra |
+| envoy-gateway-routes | infra/envoy-gateway | envoy-gateway-system |
+| puchi-frontend | infra/frontend/web | puchi-frontend |
+| puchi-backend-{core,content,grading,user,game,media,notification} | infra/backend/{service} | puchi-backend |
+
 ## Application spec
 
 ```yaml
@@ -37,9 +47,28 @@ spec:
 
 ## Project
 
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: puchi
+  namespace: argocd
+spec:
+  sourceRepos:
+    - 'https://github.com/puchidemy/puchi-infra'
+    - 'https://github.com/puchidemy/puchi-backend'
+    - 'https://helm.supertokens.io'
+    - 'https://gateway.envoyproxy.io/helm'
+  destinations:
+    - namespace: argocd
+    - namespace: puchi-*
+    - namespace: envoy-gateway-system
+```
+
 - Mỗi component thuộc project `puchi`
 - Destination namespace phải nằm trong whitelist của project
 - Các source repo phải được khai báo trong `sourceRepos`
+- Backend services deploy từ `puchi-infra` repo (không phải puchi-backend), image từ GHCR
 
 ## Secrets
 
