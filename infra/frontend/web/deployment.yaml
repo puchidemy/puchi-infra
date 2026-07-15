@@ -23,12 +23,44 @@ spec:
               value: "https://puchi.io.vn"
             - name: NEXT_PUBLIC_API_URL
               value: "https://api.puchi.io.vn"
+            - name: NEXT_PUBLIC_WEBSITE_DOMAIN
+              value: "https://puchi.io.vn"
             - name: SUPERTOKENS_CONNECTION_URI
               value: "http://st-core-svc.puchi-infra.svc.cluster.local:3567"
             - name: SUPERTOKENS_API_KEY
               value: "change-in-production-please"
             - name: NODE_ENV
               value: "production"
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-credentials
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-credentials
+                  key: GOOGLE_CLIENT_SECRET
+            - name: FACEBOOK_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-credentials
+                  key: FACEBOOK_CLIENT_ID
+            - name: FACEBOOK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-credentials
+                  key: FACEBOOK_CLIENT_SECRET
+            - name: TIKTOK_CLIENT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-credentials
+                  key: TIKTOK_CLIENT_KEY
+            - name: TIKTOK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-credentials
+                  key: TIKTOK_CLIENT_SECRET
           resources:
             requests:
               cpu: 100m
