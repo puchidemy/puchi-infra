@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core
+  namespace: puchi-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: core
+  template:
+    metadata:
+      labels:
+        app: core
+    spec:
+      containers:
+        - name: core
+          image: ghcr.io/puchidemy/puchi-core:latest
+          ports:
+            - containerPort: 8000
+            - containerPort: 9000
+          command: ["./core", "-conf", "/data/conf"]
+          env:
+            - name: AUTH_SUPERTOKENS_CONNECTION_URI
+              value: "http://st-core.puchi-infra.svc.cluster.local:3567"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: core-service
+  namespace: puchi-backend
+spec:
+  selector:
+    app: core
+  ports:
+    - name: grpc
+      port: 8000
+      targetPort: 8000
+    - name: debug
+      port: 9000
+      targetPort: 9000

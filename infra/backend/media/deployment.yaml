@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media
+  namespace: puchi-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media
+  template:
+    metadata:
+      labels:
+        app: media
+    spec:
+      containers:
+        - name: media
+          image: ghcr.io/puchidemy/puchi-media:latest
+          ports:
+            - containerPort: 8000
+            - containerPort: 9000
+          command: ["./media", "-conf", "/data/conf"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-service
+  namespace: puchi-backend
+spec:
+  selector:
+    app: media
+  ports:
+    - name: grpc
+      port: 8000
+      targetPort: 8000
+    - name: debug
+      port: 9000
+      targetPort: 9000

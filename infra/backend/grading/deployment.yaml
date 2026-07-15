@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grading
+  namespace: puchi-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grading
+  template:
+    metadata:
+      labels:
+        app: grading
+    spec:
+      containers:
+        - name: grading
+          image: ghcr.io/puchidemy/puchi-grading:latest
+          ports:
+            - containerPort: 8000
+            - containerPort: 9000
+          command: ["./grading", "-conf", "/data/conf"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grading-service
+  namespace: puchi-backend
+spec:
+  selector:
+    app: grading
+  ports:
+    - name: grpc
+      port: 8000
+      targetPort: 8000
+    - name: debug
+      port: 9000
+      targetPort: 9000
