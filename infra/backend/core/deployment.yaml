@@ -27,6 +27,7 @@ data:
         cookie_domain: "puchi.io.vn"
         cookie_secure: true
       public_paths:
+        - /auth
         - /v1/health
         - /v1/healthz
 ---
