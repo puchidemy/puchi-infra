@@ -5,4 +5,5 @@ resources:
   - gateway.yaml
   - httproute.yaml
   - envoyproxy.yaml
+  - puchi-api-service.yaml
   - security-policy.yaml
