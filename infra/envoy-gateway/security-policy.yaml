@@ -11,7 +11,7 @@ spec:
   extAuth:
     http:
       backendRef:
-        name: supertokens
+        name: st-core-svc
         namespace: puchi-infra
         port: 3567
       path: /session/verify
