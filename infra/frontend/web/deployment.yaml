@@ -29,6 +29,8 @@ spec:
               value: "https://puchi.io.vn"
             - name: NODE_ENV
               value: "production"
+            - name: AUTH_URL
+              value: "https://puchi.io.vn"
             - name: ZITADEL_CLIENT_ID
               value: "382000685111116512"
             - name: ZITADEL_ISSUER
