@@ -38,7 +38,7 @@ spec:
             - name: ZITADEL_ISSUER
               value: "https://auth.puchi.io.vn"
             - name: ZITADEL_INTERNAL_URL
-              value: "http://zitadel.puchi-auth.svc.cluster.local:8080"
+              value: "https://auth.puchi.io.vn"
             - name: ZITADEL_SERVICE_TOKEN
               valueFrom:
                 secretKeyRef:
