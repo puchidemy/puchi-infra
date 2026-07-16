@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+  namespace: puchi-backend
+data:
+  config.yaml: |
+    server:
+      http:
+        addr: 0.0.0.0:8000
+        timeout: 1s
+      grpc:
+        addr: 0.0.0.0:9000
+        timeout: 1s
+    auth:
+      issuer: "https://api.puchi.io.vn"
+      key_id: "2026-07-17-prod-1"
+      private_key_path: "/secrets/jwt/private.pem"
+      access_token_ttl: 900
+      refresh_token_ttl: 2592000
+      cors_allowed_origins:
+        - "https://puchi.io.vn"
+        - "http://localhost:3000"
+    data:
+      database:
+        source: "postgres://puchi:puchi-db-prod@pg-puchi-rw.puchi-db.svc.cluster.local:5432/puchi?sslmode=disable&search_path=auth"
+      valkey:
+        addr: "valkey.platform.svc.cluster.local:6379"
+        db: 0
+        pool_size: 10
+      nats:
+        url: "nats://nats.platform.svc.cluster.local:4222"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: puchi-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: ghcr.io/puchidemy/puchi-auth:git-85b019a
+          ports:
+            - containerPort: 8000
+            - containerPort: 9000
+          command: ["./auth", "-conf", "/data/conf"]
+          volumeMounts:
+            - name: config
+              mountPath: /data/conf
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: auth-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: puchi-backend
+spec:
+  selector:
+    app: auth
+  ports:
+    - name: grpc
+      port: 8000
+      targetPort: 8000
+    - name: debug
+      port: 9000
+      targetPort: 9000
