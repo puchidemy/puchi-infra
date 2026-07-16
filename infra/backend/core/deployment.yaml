@@ -21,11 +21,9 @@ data:
         read_timeout: 0.2s
         write_timeout: 0.2s
     auth:
-      supertokens:
-        connection_uri: "http://st-core.puchi-infra.svc:3567"
-        api_key: "change-in-production-please"
-        cookie_domain: "puchi.io.vn"
-        cookie_secure: true
+      zitadel:
+        issuer_url: "https://auth.puchi.io.vn"
+        jwks_url: "https://auth.puchi.io.vn/oauth/v2/keys"
       public_paths:
         - /auth
         - /v1/health
@@ -52,9 +50,6 @@ spec:
           ports:
             - containerPort: 8000
             - containerPort: 9000
-          env:
-            - name: SUPERTOKENS_API_DOMAIN
-              value: "https://api.puchi.io.vn"
           command: ["./core", "-conf", "/data/conf"]
           volumeMounts:
             - name: config
