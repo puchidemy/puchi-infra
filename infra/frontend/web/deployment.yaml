@@ -27,12 +27,24 @@ spec:
               value: "https://api.puchi.io.vn"
             - name: NEXT_PUBLIC_WEBSITE_DOMAIN
               value: "https://puchi.io.vn"
-            - name: SUPERTOKENS_CONNECTION_URI
-              value: "http://st-core-svc.puchi-infra.svc:3567"
-            - name: SUPERTOKENS_API_KEY
-              value: "change-in-production-please"
             - name: NODE_ENV
               value: "production"
+            - name: ZITADEL_CLIENT_ID
+              value: "382000685111116512"
+            - name: ZITADEL_ISSUER
+              value: "https://auth.puchi.io.vn"
+            - name: ZITADEL_INTERNAL_URL
+              value: "http://zitadel.puchi-auth.svc.cluster.local:8080"
+            - name: ZITADEL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: zitadel-credentials
+                  key: ZITADEL_SERVICE_TOKEN
+            - name: AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zitadel-credentials
+                  key: AUTH_SECRET
             - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:

@@ -22,20 +22,7 @@ spec:
     allowHeaders:
       - content-type
       - authorization
-      - cookie
       - x-requested-with
-      - rid
-      - anti-csrftoken-a-tes
     exposeHeaders:
       - content-type
     allowCredentials: true
-  extAuth:
-    http:
-      backendRef:
-        name: st-core-svc
-        namespace: puchi-infra
-        port: 3567
-      path: /session/verify
-      headersToBackend:
-        - cookie
-        - authorization

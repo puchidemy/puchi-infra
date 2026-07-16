@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: puchi-auth
+
+helmCharts:
+  - name: zitadel
+    repo: https://charts.zitadel.com
+    version: 10.0.4
+    releaseName: zitadel
+    namespace: puchi-auth
+    valuesFile: values.yaml
