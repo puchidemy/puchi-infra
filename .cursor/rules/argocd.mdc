@@ -19,7 +19,7 @@ Current child apps:
 | puchi-frontend | infra/frontend/web | puchi-frontend |
 | puchi-backend-{auth,core,content,grading,user,game,media,notification} | infra/backend/{service} | puchi-backend |
 
-**Không còn Zitadel/Supertokens** — auth-service tự xây dựng thay thế.
+**Auth = Limen** (`app/auth/` trong puchi-backend) — opaque session + Bearer. Secrets cluster-managed (`auth-limen-secret`, `auth-oauth-credentials`).
 
 ## Application spec
 

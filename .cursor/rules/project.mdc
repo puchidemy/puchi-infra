@@ -35,7 +35,7 @@ puchi-infra/
 │   ├── envoy-gateway/              # Envoy Gateway config
 │   ├── frontend/web/               # Frontend K8s manifests
 │   └── backend/                    # 8 backend service manifests
-│       ├── auth/                   # Auth-service (thay thế Zitadel)
+│       ├── auth/                   # Auth-service (Limen)
 │       ├── core/
 │       ├── content/
 │       ├── grading/
@@ -90,7 +90,7 @@ envoy-gateway/
 ### HTTPRoute rules
 | Path prefix | Backend | Namespace |
 |-------------|---------|-----------|
-| `/auth` | auth-service:8080 | puchi-backend |
+| `/auth` | auth-service:8000 | puchi-backend |
 | `/core` | core-service:8000 | puchi-backend |
 | `/content` | content-service:8000 | puchi-backend |
 | `/game` | game-service:8000 | puchi-backend |
@@ -105,23 +105,25 @@ cors:
   allowOrigins: ["https://puchi.io.vn", "http://localhost:3000"]
   allowCredentials: true
 ```
-**Không có extAuth** — JWT verification do từng Go backend service tự xử lý qua `pkg/auth/`.
+**Không có extAuth** — session introspect do từng Go backend service tự xử lý qua `pkg/auth/`.
 
-## Auth Flow (Infra layer)
+## Auth Flow (Infra layer — Limen)
 
 ```
-Browser → Traefik/Cloudflare → Next.js PWA (puchi.io.vn)
+Browser → Traefik/Cloudflare → Next.js PWA (puchi.io.vn + limen-auth)
                                     │
-                                    ├─► api.puchi.io.vn/auth → auth-service:8080
-                                    │     POST /login, POST /register, GET /social/...
+                                    ├─► api.puchi.io.vn/auth/* → auth-service:8000 (Limen)
+                                    │     credential-password + OAuth google/facebook/tiktok
                                     │
                                     └─► api.puchi.io.vn/{core,user,...} → Go services
-                                          └── JWT verify local via JWKS (pkg/auth/)
+                                          └── Bearer introspect → GET /internal/session
 ```
 
-**Auth-service không expose ra ngoài** — chỉ internal qua Envoy Gateway:
-- Cluster DNS: `auth-service.puchi-backend.svc.cluster.local:8080`
+**Auth-service** qua Envoy Gateway:
+- Cluster DNS: `auth-service.puchi-backend.svc.cluster.local:8000`
 - Public: `https://api.puchi.io.vn/auth/*`
+- Secrets (cluster-managed, không commit): `auth-limen-secret`, `auth-oauth-credentials`
+- OAuth callbacks: `https://api.puchi.io.vn/auth/oauth/{google|facebook|tiktok}/callback`
 
 ## Frontend Deployment
 

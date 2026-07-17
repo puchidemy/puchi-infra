@@ -56,7 +56,7 @@ puchi-infra/
 | Service | Chart | Namespace | Trạng thái |
 |---------|-------|-----------|------------|
 | PostgreSQL 18 | CloudNativePG CRD | puchi-db | ✅ Running |
-| Auth Service | custom Helm | puchi-backend | ✅ Deployed |
+| Auth Service | Raw manifests (Limen) | puchi-backend | ✅ Deployed |
 | Envoy Gateway | envoy/gateway-helm | envoy-gateway-system | ✅ Deployed |
 
 ## Triển khai
@@ -121,6 +121,8 @@ db: 1 (avoid conflict with Arda)
 
 ## Domains
 
-- `api.puchi.io.vn` — Envoy Gateway (auth + backend API)
+- `api.puchi.io.vn` — Envoy Gateway (Limen auth + backend API)
+- Auth callbacks: `https://api.puchi.io.vn/auth/oauth/{google|facebook|tiktok}/callback`
+- Auth secrets (cluster-only): `auth-limen-secret`, `auth-oauth-credentials`
 
 > **Note:** HTTPS qua Cloudflare Tunnel, chưa có cert-manager.

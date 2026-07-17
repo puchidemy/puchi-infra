@@ -2,4 +2,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - deployment.yaml
-  - secret-oauth2.yaml
+# Secrets auth-social-oauth2 + auth-limen-secret are cluster-managed (see secret-oauth2.yaml notes).

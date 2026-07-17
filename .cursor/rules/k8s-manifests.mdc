@@ -34,12 +34,12 @@ Mỗi service có:
 - ConfigMap: `{service}-config` chứa config.yaml (server, data, auth)
 - Deployment: image `ghcr.io/puchidemy/puchi-{service}:latest`
 - Service: `{service}-service` (ClusterIP)
-- Ports: HTTP theo service (auth:8080, backend khác:8000), gRPC (auth:9090, backend khác:9000)
+- Ports: HTTP **8000** (auth + các service khác), gRPC **9000** (các service Kratos; auth không có gRPC)
 
-Auth config trong ConfigMap:
+Auth config trong ConfigMap (các Go service):
 ```yaml
 auth:
-  auth_service_url: "http://auth-service.puchi-backend.svc.cluster.local:8080"
+  auth_service_url: "http://auth-service.puchi-backend.svc.cluster.local:8000"
   public_paths:
     - /v1/health
     - /v1/healthz
@@ -84,7 +84,7 @@ spec:
     allowOrigins: ["https://puchi.io.vn", "http://localhost:3000"]
     allowCredentials: true
 ```
-JWT verification do từng Go backend service tự xử lý (extAuth không cấu hình ở Envoy).
+Session introspect do từng Go backend service tự xử lý qua `pkg/auth/` (extAuth không cấu hình ở Envoy).
 
 ### HTTPRoute
 ```yaml
@@ -101,7 +101,7 @@ spec:
       backendRefs:
         - name: auth-service
           namespace: puchi-backend
-          port: 8080
+          port: 8000
     - matches:
         - path:
             type: PathPrefix
@@ -112,15 +112,16 @@ spec:
           port: 8000
 ```
 
-## Auth-service Deployment
+## Auth-service Deployment (Limen)
 
 File: `infra/backend/auth/deployment.yaml`
 
-- ConfigMap: auth-config với config.yaml (issuer, cors_allowed_origins, db, valkey, nats)
-- Secret: auth-jwt-key (private.pem)
-- Service: auth-service (ClusterIP:8080, 9090)
-- Env: TOTP_ENCRYPTION_KEY từ Secret
-
+- ConfigMap: auth-config (limen base_url, trusted_origins, cookie_domain, db, nats)
+- Secrets (cluster-managed, **không** commit giá trị vào git):
+  - `auth-limen-secret` → `LIMEN_SECRET` (32 bytes)
+  - `auth-oauth-credentials` → `GOOGLE_*`, `FACEBOOK_*`, `TIKTOK_*`
+- Service: auth-service (ClusterIP:**8000**)
+- OAuth callbacks: `https://api.puchi.io.vn/auth/oauth/{google|facebook|tiktok}/callback`
 ## Garage buckets
 
 ```bash

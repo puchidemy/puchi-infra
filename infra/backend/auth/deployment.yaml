@@ -42,7 +42,7 @@ spec:
           image: ghcr.io/puchidemy/puchi-auth:git-d9c7c3a
           envFrom:
             - secretRef:
-                name: auth-social-oauth2
+                name: auth-oauth-credentials
           env:
             - name: LIMEN_SECRET
               valueFrom:
