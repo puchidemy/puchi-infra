@@ -22,7 +22,7 @@ puchi-infra/
 │       ├── root.yaml             # App of Apps root
 │       ├── repo-creds.yaml       # GitHub PAT
 │       ├── puchi-db.yaml         # PostgreSQL cluster
-│       ├── supertokens.yaml      # Supertoken auth
+│       ├── auth-service.yaml     # Auth service
 │       └── envoy-gateway.yaml    # Envoy Gateway
 ├── infra/
 │   └── postgres-cluster/        # CloudNativePG Cluster CRDs
@@ -43,7 +43,7 @@ puchi-infra/
 
 | Service | Namespace | Cách dùng cho Puchi |
 |---------|-----------|---------------------|
-| **CloudNativePG** | cnpg-system | Tạo cluster `pg-puchi`, `pg-supertokens` |
+| **CloudNativePG** | cnpg-system | Tạo cluster `pg-puchi` |
 | **NATS** | platform | Subject prefix `puchi.*` |
 | **Garage (S3)** | platform | Bucket `puchi-*` |
 | **Valkey (Redis)** | platform | DB index riêng |
@@ -56,7 +56,7 @@ puchi-infra/
 | Service | Chart | Namespace | Trạng thái |
 |---------|-------|-----------|------------|
 | PostgreSQL 18 | CloudNativePG CRD | puchi-db | ✅ Running |
-| Supertoken | supertokens/helm | puchi-infra | ✅ Deployed |
+| Auth Service | custom Helm | puchi-backend | ✅ Deployed |
 | Envoy Gateway | envoy/gateway-helm | envoy-gateway-system | ✅ Deployed |
 
 ## Triển khai
@@ -121,7 +121,6 @@ db: 1 (avoid conflict with Arda)
 
 ## Domains
 
-- `auth.puchi.io.vn` — Supertoken API
-- `api.puchi.io.vn` — Envoy Gateway
+- `api.puchi.io.vn` — Envoy Gateway (auth + backend API)
 
 > **Note:** HTTPS qua Cloudflare Tunnel, chưa có cert-manager.
