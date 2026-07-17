@@ -23,16 +23,16 @@ data:
         - "http://localhost:3000"
       social:
         google:
-          client_id: "REPLACE_WITH_GOOGLE_CLIENT_ID"
-          client_secret: "REPLACE_WITH_GOOGLE_CLIENT_SECRET"
+          client_id: "${GOOGLE_CLIENT_ID}"
+          client_secret: "${GOOGLE_CLIENT_SECRET}"
           redirect_url: "https://api.puchi.io.vn/auth/callback/google"
         facebook:
-          client_id: "REPLACE_WITH_FACEBOOK_CLIENT_ID"
-          client_secret: "REPLACE_WITH_FACEBOOK_CLIENT_SECRET"
+          client_id: "${FACEBOOK_CLIENT_ID}"
+          client_secret: "${FACEBOOK_CLIENT_SECRET}"
           redirect_url: "https://api.puchi.io.vn/auth/callback/facebook"
         tiktok:
-          client_id: "REPLACE_WITH_TIKTOK_CLIENT_ID"
-          client_secret: "REPLACE_WITH_TIKTOK_CLIENT_SECRET"
+          client_id: "${TIKTOK_CLIENT_ID}"
+          client_secret: "${TIKTOK_CLIENT_SECRET}"
           redirect_url: "https://api.puchi.io.vn/auth/callback/tiktok"
     data:
       database:
@@ -63,10 +63,19 @@ spec:
       containers:
         - name: auth
           image: ghcr.io/puchidemy/puchi-auth:git-918e111
+          envFrom:
+            - secretRef:
+                name: auth-social-oauth2
           ports:
             - containerPort: 8000
             - containerPort: 9000
-          command: ["./auth", "-conf", "/data/conf"]
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /data/conf/config.yaml /tmp/config.yaml
+              sed -i "s|\${GOOGLE_CLIENT_ID}|${GOOGLE_CLIENT_ID}|g; s|\${GOOGLE_CLIENT_SECRET}|${GOOGLE_CLIENT_SECRET}|g; s|\${FACEBOOK_CLIENT_ID}|${FACEBOOK_CLIENT_ID}|g; s|\${FACEBOOK_CLIENT_SECRET}|${FACEBOOK_CLIENT_SECRET}|g; s|\${TIKTOK_CLIENT_ID}|${TIKTOK_CLIENT_ID}|g; s|\${TIKTOK_CLIENT_SECRET}|${TIKTOK_CLIENT_SECRET}|g" /tmp/config.yaml
+              exec ./auth -conf /tmp
           volumeMounts:
             - name: config
               mountPath: /data/conf
