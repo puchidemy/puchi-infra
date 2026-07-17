@@ -17,7 +17,7 @@ spec:
         - name: ghcr-pull
       containers:
         - name: web
-          image: ghcr.io/puchidemy/puchi-frontend:git-55d7bbe
+          image: ghcr.io/puchidemy/puchi-frontend:git-04fbf32
           ports:
             - containerPort: 3000
           env:
