@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: ghcr.io/puchidemy/puchi-auth:git-c512816
+          image: ghcr.io/puchidemy/puchi-auth:git-67b2d3d
           envFrom:
             - secretRef:
                 name: auth-oauth-credentials
