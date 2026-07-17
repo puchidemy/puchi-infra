@@ -27,7 +27,7 @@ data:
         - /v1/healthz
     media:
       storage:
-        endpoint: "https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
+        endpoint: "https://8daf04d9f3a2a26d996661b3a67d8710.r2.cloudflarestorage.com"
         access_key_id: ""
         secret_access_key: ""
         bucket: "puchi-media"
