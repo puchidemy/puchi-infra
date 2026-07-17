@@ -29,54 +29,6 @@ spec:
               value: "https://puchi.io.vn"
             - name: NODE_ENV
               value: "production"
-            - name: AUTH_URL
-              value: "https://puchi.io.vn"
-            - name: ZITADEL_CLIENT_ID
-              value: "382000685111116512"
-            - name: ZITADEL_ISSUER
-              value: "https://auth.puchi.io.vn"
-            - name: ZITADEL_INTERNAL_URL
-              value: "http://zitadel.puchi-auth.svc.cluster.local:8080"
-            - name: ZITADEL_SERVICE_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: zitadel-credentials
-                  key: ZITADEL_SERVICE_TOKEN
-            - name: AUTH_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: zitadel-credentials
-                  key: AUTH_SECRET
-            - name: GOOGLE_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-credentials
-                  key: GOOGLE_CLIENT_ID
-            - name: GOOGLE_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-credentials
-                  key: GOOGLE_CLIENT_SECRET
-            - name: FACEBOOK_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-credentials
-                  key: FACEBOOK_CLIENT_ID
-            - name: FACEBOOK_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-credentials
-                  key: FACEBOOK_CLIENT_SECRET
-            - name: TIKTOK_CLIENT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-credentials
-                  key: TIKTOK_CLIENT_KEY
-            - name: TIKTOK_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: oauth-credentials
-                  key: TIKTOK_CLIENT_SECRET
           resources:
             requests:
               cpu: 100m

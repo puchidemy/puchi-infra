@@ -8,40 +8,17 @@ data:
     server:
       http:
         addr: 0.0.0.0:8000
-        timeout: 1s
-      grpc:
-        addr: 0.0.0.0:9000
-        timeout: 1s
-    auth:
-      issuer: "https://api.puchi.io.vn"
-      key_id: "2026-07-17-prod-1"
-      private_key_path: "/secrets/jwt/private.pem"
-      access_token_ttl: 900
-      refresh_token_ttl: 2592000
-      cors_allowed_origins:
+    limen:
+      base_url: "https://api.puchi.io.vn"
+      secret: "" # set via LIMEN_SECRET env
+      trusted_origins:
         - "https://puchi.io.vn"
         - "http://localhost:3000"
-      social:
-        google:
-          client_id: "${GOOGLE_CLIENT_ID}"
-          client_secret: "${GOOGLE_CLIENT_SECRET}"
-          redirect_url: "https://api.puchi.io.vn/auth/callback/google"
-        facebook:
-          client_id: "${FACEBOOK_CLIENT_ID}"
-          client_secret: "${FACEBOOK_CLIENT_SECRET}"
-          redirect_url: "https://api.puchi.io.vn/auth/callback/facebook"
-        tiktok:
-          client_id: "${TIKTOK_CLIENT_ID}"
-          client_secret: "${TIKTOK_CLIENT_SECRET}"
-          redirect_url: "https://api.puchi.io.vn/auth/callback/tiktok"
+      cookie_domain: "puchi.io.vn"
+      frontend_url: "https://puchi.io.vn"
     data:
       database:
         source: "postgres://puchi:puchi-db-prod@pg-puchi-rw.puchi-db.svc.cluster.local:5432/puchi?sslmode=disable&search_path=auth"
-      valkey:
-        addr: "valkey.platform.svc.cluster.local:6379"
-        password: "Pkz1/8t3mVkXZKt/4IBg3U3nqtzFYZs/K/vhnt0C6C4="
-        db: 0
-        pool_size: 10
       nats:
         url: "nats://nats.platform.svc.cluster.local:4222"
 ---
@@ -66,16 +43,22 @@ spec:
           envFrom:
             - secretRef:
                 name: auth-social-oauth2
+          env:
+            - name: LIMEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-limen-secret
+                  key: LIMEN_SECRET
+            - name: LIMEN_BASE_URL
+              value: "https://api.puchi.io.vn"
+            - name: FRONTEND_URL
+              value: "https://puchi.io.vn"
           ports:
             - containerPort: 8000
-            - containerPort: 9000
           command:
-            - /bin/sh
-            - -c
-            - |
-              cp /data/conf/config.yaml /tmp/config.yaml
-              sed -i "s|\${GOOGLE_CLIENT_ID}|${GOOGLE_CLIENT_ID}|g; s|\${GOOGLE_CLIENT_SECRET}|${GOOGLE_CLIENT_SECRET}|g; s|\${FACEBOOK_CLIENT_ID}|${FACEBOOK_CLIENT_ID}|g; s|\${FACEBOOK_CLIENT_SECRET}|${FACEBOOK_CLIENT_SECRET}|g; s|\${TIKTOK_CLIENT_ID}|${TIKTOK_CLIENT_ID}|g; s|\${TIKTOK_CLIENT_SECRET}|${TIKTOK_CLIENT_SECRET}|g" /tmp/config.yaml
-              exec ./auth -conf /tmp
+            - ./auth
+            - -conf
+            - /data/conf
           volumeMounts:
             - name: config
               mountPath: /data/conf
@@ -87,6 +70,18 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 20
       volumes:
         - name: config
           configMap:
@@ -101,9 +96,6 @@ spec:
   selector:
     app: auth
   ports:
-    - name: grpc
+    - name: http
       port: 8000
       targetPort: 8000
-    - name: debug
-      port: 9000
-      targetPort: 9000
