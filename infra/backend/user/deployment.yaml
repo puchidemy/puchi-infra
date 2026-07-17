@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: ghcr.io/puchidemy/puchi-user:git-bcadbbb
+          image: ghcr.io/puchidemy/puchi-user:git-1df3b3f
           ports:
             - containerPort: 8000
             - containerPort: 9000

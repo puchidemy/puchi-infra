@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: grading
-          image: ghcr.io/puchidemy/puchi-grading:git-bcadbbb
+          image: ghcr.io/puchidemy/puchi-grading:git-1df3b3f
           ports:
             - containerPort: 8000
             - containerPort: 9000
