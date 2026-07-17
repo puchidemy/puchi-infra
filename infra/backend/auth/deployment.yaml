@@ -26,7 +26,6 @@ data:
         source: "postgres://puchi:puchi-db-prod@pg-puchi-rw.puchi-db.svc.cluster.local:5432/puchi?sslmode=disable&search_path=auth"
       valkey:
         addr: "valkey.platform.svc.cluster.local:6379"
-        password: "Pkz1/8t3mVkXZKt/4IBg3U3nqtzFYZs/K/vhnt0C6C4="
         db: 0
         pool_size: 10
       nats:
