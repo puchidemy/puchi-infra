@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
         - name: learn
-          image: ghcr.io/puchidemy/puchi-learn:git-d9c7c3a
+          image: ghcr.io/puchidemy/puchi-learn:git-67b2d3d
           ports:
             - containerPort: 8000
             - containerPort: 9000
