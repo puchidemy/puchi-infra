@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: core
-          image: ghcr.io/puchidemy/puchi-core:git-fedad8f
+          image: ghcr.io/puchidemy/puchi-core:git-ce58706
           ports:
             - containerPort: 8000
             - containerPort: 9000
