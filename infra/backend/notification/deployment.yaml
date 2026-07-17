@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
         - name: notification
-          image: ghcr.io/puchidemy/puchi-notification:git-67b2d3d
+          image: ghcr.io/puchidemy/puchi-notification:git-8a54aad
           ports:
             - containerPort: 8000
             - containerPort: 9000
