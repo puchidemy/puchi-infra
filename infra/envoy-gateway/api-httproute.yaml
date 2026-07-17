@@ -40,6 +40,9 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /v1/media
+        - path:
+            type: PathPrefix
             value: /media
       backendRefs:
         - name: media-service
