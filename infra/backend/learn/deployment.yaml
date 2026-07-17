@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: game-config
+  name: learn-config
   namespace: puchi-backend
 data:
   config.yaml: |
@@ -20,34 +20,41 @@ data:
         addr: valkey-node-0.platform.svc.cluster.local:6379
         read_timeout: 0.2s
         write_timeout: 0.2s
+      nats:
+        url: "nats://nats.platform.svc.cluster.local:4222"
     auth:
       auth_service_url: "http://auth-service.puchi-backend:8000"
       public_paths:
         - /v1/health
         - /v1/healthz
+        - /v1/learn/guest/session
+    learn:
+      trial_unit_id: "11111111-1111-1111-1111-111111111111"
+      guest_cookie_name: "puchi_guest_id"
+      guest_ttl_days: 30
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: game
+  name: learn
   namespace: puchi-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: game
+      app: learn
   template:
     metadata:
       labels:
-        app: game
+        app: learn
     spec:
       containers:
-        - name: game
-          image: ghcr.io/puchidemy/puchi-game:git-d9c7c3a
+        - name: learn
+          image: ghcr.io/puchidemy/puchi-learn:git-d9c7c3a
           ports:
             - containerPort: 8000
             - containerPort: 9000
-          command: ["./game", "-conf", "/data/conf"]
+          command: ["./learn", "-conf", "/data/conf"]
           volumeMounts:
             - name: config
               mountPath: /data/conf
@@ -62,16 +69,16 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: game-config
+            name: learn-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: game-service
+  name: learn-service
   namespace: puchi-backend
 spec:
   selector:
-    app: game
+    app: learn
   ports:
     - name: grpc
       port: 8000

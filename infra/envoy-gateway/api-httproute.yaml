@@ -26,25 +26,9 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /content
+            value: /v1/learn
       backendRefs:
-        - name: content-service
-          namespace: puchi-backend
-          port: 8000
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /game
-      backendRefs:
-        - name: game-service
-          namespace: puchi-backend
-          port: 8000
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /grading
-      backendRefs:
-        - name: grading-service
+        - name: learn-service
           namespace: puchi-backend
           port: 8000
     - matches:
