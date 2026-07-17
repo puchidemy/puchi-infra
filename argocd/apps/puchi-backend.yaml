@@ -22,56 +22,14 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: puchi-backend-content
+  name: puchi-backend-learn
   namespace: argocd
 spec:
   project: puchi
   source:
     repoURL: 'https://github.com/puchidemy/puchi-infra'
     targetRevision: main
-    path: infra/backend/content
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: puchi-backend
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: puchi-backend-game
-  namespace: argocd
-spec:
-  project: puchi
-  source:
-    repoURL: 'https://github.com/puchidemy/puchi-infra'
-    targetRevision: main
-    path: infra/backend/game
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: puchi-backend
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: puchi-backend-grading
-  namespace: argocd
-spec:
-  project: puchi
-  source:
-    repoURL: 'https://github.com/puchidemy/puchi-infra'
-    targetRevision: main
-    path: infra/backend/grading
+    path: infra/backend/learn
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: puchi-backend
