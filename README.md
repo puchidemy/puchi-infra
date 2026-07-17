@@ -17,23 +17,18 @@ Infrastructure as Code cho Puchi platform — **ArgoCD GitOps** trên K3s.
 ```
 puchi-infra/
 ├── argocd/
-│   ├── projects/infra.yaml       # AppProject: puchi
-│   └── apps/
-│       ├── root.yaml             # App of Apps root
-│       ├── repo-creds.yaml       # GitHub PAT
-│       ├── puchi-db.yaml         # PostgreSQL cluster
-│       ├── auth-service.yaml     # Auth service
-│       └── envoy-gateway.yaml    # Envoy Gateway
+│   ├── projects/infra.yaml
+│   └── apps/                    # App of Apps
 ├── infra/
-│   └── postgres-cluster/        # CloudNativePG Cluster CRDs
+│   ├── postgres-cluster/
+│   ├── envoy-gateway/
+│   ├── frontend/web/
+│   └── backend/                 # auth, core, learn, media, notification
 ├── scripts/
-│   ├── bootstrap.sh             # 1-command ArgoCD bootstrap
-│   ├── setup-garage.sh          # Garage buckets + key
-│   └── setup-nats.sh            # NATS streams
-├── .cursor/rules/
-│   ├── project.mdc              # Project overview
-│   ├── argocd.mdc               # App of Apps conventions
-│   └── k8s-manifests.mdc        # K8s manifest conventions
+│   ├── bootstrap.sh
+│   ├── setup-r2.sh              # R2 + media-r2-credentials
+│   ├── setup-smtp.sh            # Tino → notification-smtp
+│   └── setup-nats.sh
 └── README.md
 ```
 
@@ -43,49 +38,51 @@ puchi-infra/
 
 | Service | Namespace | Cách dùng cho Puchi |
 |---------|-----------|---------------------|
-| **CloudNativePG** | cnpg-system | Tạo cluster `pg-puchi` |
-| **NATS** | platform | Subject prefix `puchi.*` |
-| **Garage (S3)** | platform | Bucket `puchi-*` |
-| **Valkey (Redis)** | platform | DB index riêng |
-| **Traefik** | kube-system | Ingress controller |
-| **ArgoCD** | argocd | GitOps deploy |
-| **Cloudflare Tunnel** | platform | Expose ra internet |
+| **CloudNativePG** | cnpg-system | Cluster `pg-puchi` |
+| **NATS** | platform | Events (`email.send`, `learn.*`, …) |
+| **Valkey (Redis)** | platform | Cache |
+| **Traefik** | kube-system | Ingress |
+| **ArgoCD** | argocd | GitOps |
+| **Cloudflare Tunnel** | platform | Expose internet |
+
+Object storage Puchi dùng **Cloudflare R2** (không phụ thuộc Garage cho media).
 
 ### Deployed cho Puchi
 
-| Service | Chart | Namespace | Trạng thái |
-|---------|-------|-----------|------------|
-| PostgreSQL 18 | CloudNativePG CRD | puchi-db | ✅ Running |
-| Auth Service | Raw manifests (Limen) | puchi-backend | ✅ Deployed |
-| Envoy Gateway | envoy/gateway-helm | envoy-gateway-system | ✅ Deployed |
+| Service | Namespace |
+|---------|-----------|
+| PostgreSQL 18 | puchi-db |
+| Envoy Gateway | envoy-gateway-system |
+| Frontend | puchi-frontend |
+| Backend (auth, core, learn, media, notification) | puchi-backend |
 
 ## Triển khai
 
-### Bootstrap
-
 ```bash
 ssh hoan@192.168.100.201
-
-# Apply ArgoCD project + root app
 kubectl apply -f argocd/projects/
 kubectl apply -f argocd/apps/root.yaml
 ```
 
-ArgoCD sẽ tự động sync tất cả Application.
-
-### Setup Garage buckets
+### Secrets (cluster-only, không commit)
 
 ```bash
-bash scripts/setup-garage.sh
+# R2
+export R2_ACCOUNT_ID=... R2_ACCESS_KEY_ID=... R2_SECRET_ACCESS_KEY=...
+bash scripts/setup-r2.sh
+
+# Tino SMTP (notification)
+export SMTP_USERNAME=... SMTP_PASSWORD=... SMTP_FROM_EMAIL=...
+bash scripts/setup-smtp.sh
 ```
 
-### Setup NATS streams
+### NATS
 
 ```bash
 bash scripts/setup-nats.sh
 ```
 
-## Kết nối từ Puchi Backend
+## Kết nối
 
 ### PostgreSQL
 
@@ -93,36 +90,40 @@ bash scripts/setup-nats.sh
 host: pg-puchi-rw.puchi-db.svc.cluster.local
 port: 5432
 database: puchi
-user: puchi (secret: pg-puchi-app-secret)
 ```
 
 ### NATS
 
 ```
 url: nats://nats.platform.svc.cluster.local:4222
-subject prefix: puchi.*
 ```
 
-### Garage (S3)
+### R2 (media)
 
 ```
-endpoint: http://garage.platform.svc.cluster.local:3900
-region: puchi
-buckets: puchi-audio, puchi-images, puchi-avatars, puchi-backups
+endpoint: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+bucket: puchi-media
+cdn: https://cdn.puchi.io.vn
+secret: media-r2-credentials
 ```
 
-### Valkey (Redis)
+### SMTP (notification)
 
 ```
-host: valkey-node.platform.svc.cluster.local
-port: 6379
-db: 1 (avoid conflict with Arda)
+host: smtp.tino.vn:587
+secret: notification-smtp
+```
+
+### Valkey
+
+```
+host: valkey-node.platform.svc.cluster.local:6379
 ```
 
 ## Domains
 
-- `api.puchi.io.vn` — Envoy Gateway (Limen auth + backend API)
-- Auth callbacks: `https://api.puchi.io.vn/auth/oauth/{google|facebook|tiktok}/callback`
-- Auth secrets (cluster-only): `auth-limen-secret`, `auth-oauth-credentials`
-
-> **Note:** HTTPS qua Cloudflare Tunnel, chưa có cert-manager.
+- `puchi.io.vn` — Frontend
+- `api.puchi.io.vn` — Envoy (auth + API)
+- `cdn.puchi.io.vn` — R2 public CDN
+- OAuth: `https://api.puchi.io.vn/auth/oauth/{google|facebook|tiktok}/callback`
+- Secrets: `auth-limen-secret`, `auth-oauth-credentials`, `media-r2-credentials`, `notification-smtp`

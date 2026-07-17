@@ -10,7 +10,13 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /core
+            value: /v1/profile
+        - path:
+            type: PathPrefix
+            value: /v1/onboarding
+        - path:
+            type: PathPrefix
+            value: /v1/social
       backendRefs:
         - name: core-service
           namespace: puchi-backend
@@ -45,13 +51,5 @@ spec:
             value: /notification
       backendRefs:
         - name: notification-service
-          namespace: puchi-backend
-          port: 8000
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /user
-      backendRefs:
-        - name: user-service
           namespace: puchi-backend
           port: 8000

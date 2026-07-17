@@ -44,6 +44,18 @@ spec:
       containers:
         - name: notification
           image: ghcr.io/puchidemy/puchi-notification:git-8a54aad
+          env:
+            - name: NATS_URL
+              value: nats://nats.platform.svc.cluster.local:4222
+            - name: SMTP_HOST
+              value: smtp.tino.vn
+            - name: SMTP_PORT
+              value: "587"
+            - name: SMTP_FROM_NAME
+              value: Puchi
+          envFrom:
+            - secretRef:
+                name: notification-smtp
           ports:
             - containerPort: 8000
             - containerPort: 9000

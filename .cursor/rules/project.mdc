@@ -29,23 +29,21 @@ puchi-infra/
 │       ├── puchi-db.yaml           # PostgreSQL cluster
 │       ├── envoy-gateway-routes.yaml  # Envoy Gateway config
 │       ├── puchi-frontend.yaml     # Frontend deployment
-│       └── puchi-backend.yaml     # 8 backend services
+│       └── puchi-backend.yaml     # 5 backend services
 ├── infra/
 │   ├── postgres-cluster/           # CloudNativePG CRDs
 │   ├── envoy-gateway/              # Envoy Gateway config
 │   ├── frontend/web/               # Frontend K8s manifests
-│   └── backend/                    # 8 backend service manifests
+│   └── backend/                    # 5 backend service manifests
 │       ├── auth/                   # Auth-service (Limen)
-│       ├── core/
-│       ├── content/
-│       ├── grading/
-│       ├── user/
-│       ├── game/
+│       ├── core/                   # Profile, onboarding, social
+│       ├── learn/
 │       ├── media/
-│       └── notification/
+│       └── notification/           # Gotify + Tino SMTP (email.send)
 ├── scripts/
 │   ├── bootstrap.sh                # ArgoCD bootstrap
-│   ├── setup-garage.sh             # Garage buckets
+│   ├── setup-r2.sh                 # R2 bucket + media secret
+│   ├── setup-smtp.sh               # Tino SMTP → notification-smtp secret
 │   └── setup-nats.sh               # NATS streams
 └── README.md
 ```
@@ -55,12 +53,13 @@ puchi-infra/
 | Service | Namespace | Mô tả |
 |---------|-----------|-------|
 | CloudNativePG | cnpg-system | PostgreSQL operator |
-| NATS | platform | Message broker, prefix `puchi.*` |
-| Garage | platform | S3 storage, bucket `puchi-*` |
+| NATS | platform | Message broker, prefix `puchi.*` / subjects `email.send`, `learn.*` |
 | Valkey (Redis) | platform | Cache, DB index riêng |
 | Traefik | kube-system | Ingress controller |
 | ArgoCD | argocd | GitOps deploy |
 | Cloudflare Tunnel | platform | Expose ra internet |
+
+Object storage Puchi: **Cloudflare R2** (`puchi-media`, CDN `cdn.puchi.io.vn`) — không dùng Garage cho media.
 
 ## Services riêng của Puchi
 
@@ -70,7 +69,7 @@ puchi-infra/
 | Envoy Gateway | gateway-helm | envoy-gateway-system |
 | Auth Service | Raw deployment (ghcr.io/puchidemy/puchi-auth) | puchi-backend |
 | Frontend | Raw deployment (ghcr.io/puchidemy/puchi-frontend) | puchi-frontend |
-| Backend (7 services) | Raw deployment (ghcr.io/puchidemy/puchi-{service}) | puchi-backend |
+| Backend (5 services) | Raw deployment (ghcr.io/puchidemy/puchi-{service}) | puchi-backend |
 
 ## Envoy Gateway — API Gateway
 
@@ -91,13 +90,12 @@ envoy-gateway/
 | Path prefix | Backend | Namespace |
 |-------------|---------|-----------|
 | `/auth` | auth-service:8000 | puchi-backend |
-| `/core` | core-service:8000 | puchi-backend |
-| `/content` | content-service:8000 | puchi-backend |
-| `/game` | game-service:8000 | puchi-backend |
-| `/grading` | grading-service:8000 | puchi-backend |
+| `/v1/profile` | core-service:8000 | puchi-backend |
+| `/v1/onboarding` | core-service:8000 | puchi-backend |
+| `/v1/social` | core-service:8000 | puchi-backend |
+| `/v1/learn` | learn-service:8000 | puchi-backend |
 | `/media` | media-service:8000 | puchi-backend |
 | `/notification` | notification-service:8000 | puchi-backend |
-| `/user` | user-service:8000 | puchi-backend |
 
 ### SecurityPolicy (CORS only)
 ```yaml
@@ -115,7 +113,7 @@ Browser → Traefik/Cloudflare → Next.js PWA (puchi.io.vn + limen-auth)
                                     ├─► api.puchi.io.vn/auth/* → auth-service:8000 (Limen)
                                     │     credential-password + OAuth google/facebook/tiktok
                                     │
-                                    └─► api.puchi.io.vn/{core,user,...} → Go services
+                                    └─► api.puchi.io.vn/{v1/profile,v1/social,...} → Go services
                                           └── Bearer introspect → GET /internal/session
 ```
 

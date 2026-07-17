@@ -122,14 +122,19 @@ File: `infra/backend/auth/deployment.yaml`
   - `auth-oauth-credentials` → `GOOGLE_*`, `FACEBOOK_*`, `TIKTOK_*`
 - Service: auth-service (ClusterIP:**8000**)
 - OAuth callbacks: `https://api.puchi.io.vn/auth/oauth/{google|facebook|tiktok}/callback`
-## Garage buckets
+## Media (Cloudflare R2)
 
-```bash
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"globalAlias":"puchi-{bucket}"}' \
-  http://{garage}:3903/v2/CreateBucket
-```
+- Bucket: `puchi-media`
+- CDN: `cdn.puchi.io.vn`
+- Secret (cluster-only): `media-r2-credentials` (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`)
+- Setup: `scripts/setup-r2.sh`
+
+## Email (Tino SMTP via notification)
+
+- Host: `smtp.tino.vn:587` (Deployment env)
+- Secret: `notification-smtp` (`SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`)
+- Setup: `scripts/setup-smtp.sh`
+- NATS subject: `email.send` (auth publish → notification consume)
 
 ## NATS streams
 

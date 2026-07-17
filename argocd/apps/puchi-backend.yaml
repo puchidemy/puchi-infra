@@ -85,27 +85,6 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: puchi-backend-user
-  namespace: argocd
-spec:
-  project: puchi
-  source:
-    repoURL: 'https://github.com/puchidemy/puchi-infra'
-    targetRevision: main
-    path: infra/backend/user
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: puchi-backend
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
   name: puchi-backend-auth
   namespace: argocd
 spec:

@@ -17,9 +17,8 @@ Current child apps:
 | puchi-db | infra/postgres-cluster | puchi-db |
 | envoy-gateway-routes | infra/envoy-gateway | envoy-gateway-system |
 | puchi-frontend | infra/frontend/web | puchi-frontend |
-| puchi-backend-{auth,core,content,grading,user,game,media,notification} | infra/backend/{service} | puchi-backend |
-
-**Auth = Limen** (`app/auth/` trong puchi-backend) — opaque session + Bearer. Secrets cluster-managed (`auth-limen-secret`, `auth-oauth-credentials`).
+| puchi-backend-{auth,core,learn,media,notification} | infra/backend/{service} | puchi-backend |
+**Auth = Limen** (`app/auth/` trong puchi-backend) — opaque session + Bearer. Secrets cluster-managed (`auth-limen-secret`, `auth-oauth-credentials`, `media-r2-credentials`, `notification-smtp`).
 
 ## Application spec
 
