@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: ghcr.io/puchidemy/puchi-auth:git-7342090
+          image: ghcr.io/puchidemy/puchi-auth:git-47db308
           ports:
             - containerPort: 8000
             - containerPort: 9000
