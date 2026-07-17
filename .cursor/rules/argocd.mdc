@@ -15,10 +15,11 @@ Current child apps:
 |-----|------|-----------|
 | puchi-root | argocd/apps | argocd |
 | puchi-db | infra/postgres-cluster | puchi-db |
-| supertokens | infra/supertokens | puchi-infra |
 | envoy-gateway-routes | infra/envoy-gateway | envoy-gateway-system |
 | puchi-frontend | infra/frontend/web | puchi-frontend |
-| puchi-backend-{core,content,grading,user,game,media,notification} | infra/backend/{service} | puchi-backend |
+| puchi-backend-{auth,core,content,grading,user,game,media,notification} | infra/backend/{service} | puchi-backend |
+
+**Không còn Zitadel/Supertokens** — auth-service tự xây dựng thay thế.
 
 ## Application spec
 
@@ -26,17 +27,17 @@ Current child apps:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {app-name}
+  name: puchi-backend-{service}
   namespace: argocd
 spec:
   project: puchi
   source:
     repoURL: 'https://github.com/puchidemy/puchi-infra'
     targetRevision: main
-    path: infra/{component}
+    path: infra/backend/{service}
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: {namespace}
+    namespace: puchi-backend
   syncPolicy:
     automated:
       prune: true
@@ -57,7 +58,6 @@ spec:
   sourceRepos:
     - 'https://github.com/puchidemy/puchi-infra'
     - 'https://github.com/puchidemy/puchi-backend'
-    - 'https://helm.supertokens.io'
     - 'https://gateway.envoyproxy.io/helm'
   destinations:
     - namespace: argocd
@@ -68,10 +68,4 @@ spec:
 - Mỗi component thuộc project `puchi`
 - Destination namespace phải nằm trong whitelist của project
 - Các source repo phải được khai báo trong `sourceRepos`
-- Backend services deploy từ `puchi-infra` repo (không phải puchi-backend), image từ GHCR
-
-## Secrets
-
-- Repo credentials: dùng `repo-creds` secret với label `argocd.argoproj.io/secret-type: repo-creds`
-- DB secrets: `kubernetes.io/basic-auth` type
-- Không commit plaintext password — dùng sealed secrets hoặc SOPS sau
+- Backend services deploy từ `puchi-infra` repo (image từ GHCR)

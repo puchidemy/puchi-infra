@@ -27,16 +27,15 @@ puchi-infra/
 │       ├── root.yaml               # App of Apps root
 │       ├── repo-creds.yaml         # GitHub credentials
 │       ├── puchi-db.yaml           # PostgreSQL cluster
-│       ├── supertokens.yaml        # Supertokens core
 │       ├── envoy-gateway-routes.yaml  # Envoy Gateway config
 │       ├── puchi-frontend.yaml     # Frontend deployment
-│       └── puchi-backend.yaml      # 7 backend services
+│       └── puchi-backend.yaml     # 8 backend services
 ├── infra/
 │   ├── postgres-cluster/           # CloudNativePG CRDs
-│   ├── supertokens/                # Supertokens deployment
 │   ├── envoy-gateway/              # Envoy Gateway config
 │   ├── frontend/web/               # Frontend K8s manifests
-│   └── backend/                    # 7 backend service manifests
+│   └── backend/                    # 8 backend service manifests
+│       ├── auth/                   # Auth-service (thay thế Zitadel)
 │       ├── core/
 │       ├── content/
 │       ├── grading/
@@ -65,11 +64,11 @@ puchi-infra/
 
 ## Services riêng của Puchi
 
-| Service | Chart/Type | Namespace |
-|---------|-----------|-----------|
+| Service | Type | Namespace |
+|---------|------|-----------|
 | PostgreSQL | CloudNativePG CRD | puchi-db |
-| Supertokens | Raw deployment (supertokens-postgresql:11.3) | puchi-infra |
 | Envoy Gateway | gateway-helm | envoy-gateway-system |
+| Auth Service | Raw deployment (ghcr.io/puchidemy/puchi-auth) | puchi-backend |
 | Frontend | Raw deployment (ghcr.io/puchidemy/puchi-frontend) | puchi-frontend |
 | Backend (7 services) | Raw deployment (ghcr.io/puchidemy/puchi-{service}) | puchi-backend |
 
@@ -85,12 +84,13 @@ envoy-gateway/
 ├── puchi-api-service.yaml  # Service: puchi-api (ClusterIP:80)
 ├── reference-grant.yaml    # ReferenceGrant: cho phép cross-namespace
 ├── api-httproute.yaml      # HTTPRoute: route path prefix → backend services
-└── api-securitypolicy.yaml # SecurityPolicy: CORS + ext_auth
+└── api-securitypolicy.yaml # SecurityPolicy: CORS only (NO extAuth)
 ```
 
 ### HTTPRoute rules
 | Path prefix | Backend | Namespace |
 |-------------|---------|-----------|
+| `/auth` | auth-service:8080 | puchi-backend |
 | `/core` | core-service:8000 | puchi-backend |
 | `/content` | content-service:8000 | puchi-backend |
 | `/game` | game-service:8000 | puchi-backend |
@@ -99,36 +99,29 @@ envoy-gateway/
 | `/notification` | notification-service:8000 | puchi-backend |
 | `/user` | user-service:8000 | puchi-backend |
 
-### SecurityPolicy
+### SecurityPolicy (CORS only)
 ```yaml
 cors:
   allowOrigins: ["https://puchi.io.vn", "http://localhost:3000"]
   allowCredentials: true
-extAuth:
-  http:
-    backendRef: st-core-svc.puchi-infra:3567
-    path: /session/verify
-    headersToBackend: [cookie, authorization]
 ```
+**Không có extAuth** — JWT verification do từng Go backend service tự xử lý qua `pkg/auth/`.
 
 ## Auth Flow (Infra layer)
 
 ```
 Browser → Traefik/Cloudflare → Next.js PWA (puchi.io.vn)
                                     │
-                                    ├─► /api/auth/* → supertokens-node → st-core-svc:3567
+                                    ├─► api.puchi.io.vn/auth → auth-service:8080
+                                    │     POST /login, POST /register, GET /social/...
                                     │
-                                    └─► api.puchi.io.vn → Envoy Gateway
-                                          │
-                                          ├─► SecurityPolicy (CORS + ext_auth)
-                                          │     └─► st-core-svc:3567/session/verify
-                                          │
-                                          └─► HTTPRoute → puchi-backend/*:8000
+                                    └─► api.puchi.io.vn/{core,user,...} → Go services
+                                          └── JWT verify local via JWKS (pkg/auth/)
 ```
 
-**Supertokens không được expose ra ngoài** — chỉ internal:
-- Cluster DNS: `st-core-svc.puchi-infra.svc.cluster.local:3567`
-- NodePort (dev): `k3s-node:30567`
+**Auth-service không expose ra ngoài** — chỉ internal qua Envoy Gateway:
+- Cluster DNS: `auth-service.puchi-backend.svc.cluster.local:8080`
+- Public: `https://api.puchi.io.vn/auth/*`
 
 ## Frontend Deployment
 
@@ -139,18 +132,6 @@ File: `infra/frontend/web/deployment.yaml`
 |-----|-------|
 | NEXT_PUBLIC_APP_URL | `https://puchi.io.vn` |
 | NEXT_PUBLIC_API_URL | `https://api.puchi.io.vn` |
-| SUPERTOKENS_CONNECTION_URI | `http://st-core-svc.puchi-infra.svc.cluster.local:3567` |
-| SUPERTOKENS_API_KEY | (secret) |
 | NODE_ENV | production |
 
 Namespace: `puchi-frontend` | Service: `web-service:3000` (ClusterIP)
-
-## Supertokens Deployment
-
-File: `infra/supertokens/deployment.yaml`
-
-- Image: `supertokens/supertokens-postgresql:11.3`
-- Port: 3567
-- DB: `postgresql://supertokens:...@pg-supertokens-rw.puchi-db.svc:5432/supertokens`
-- API Keys: `change-in-production-please`
-- Service: `st-core-svc` (NodePort 30567)
