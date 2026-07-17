@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
         - name: game
-          image: ghcr.io/puchidemy/puchi-game:git-cec4cc5
+          image: ghcr.io/puchidemy/puchi-game:git-c69f2de
           ports:
             - containerPort: 8000
             - containerPort: 9000
