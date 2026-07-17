@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
         - name: notification
-          image: ghcr.io/puchidemy/puchi-notification:git-b1e51a3
+          image: ghcr.io/puchidemy/puchi-notification:git-41e0405
           env:
             - name: NATS_URL
               value: nats://nats.platform.svc.cluster.local:4222
