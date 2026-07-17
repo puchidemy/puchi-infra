@@ -21,6 +21,19 @@ data:
       cors_allowed_origins:
         - "https://puchi.io.vn"
         - "http://localhost:3000"
+      social:
+        google:
+          client_id: "REPLACE_WITH_GOOGLE_CLIENT_ID"
+          client_secret: "REPLACE_WITH_GOOGLE_CLIENT_SECRET"
+          redirect_url: "https://api.puchi.io.vn/auth/callback/google"
+        facebook:
+          client_id: "REPLACE_WITH_FACEBOOK_CLIENT_ID"
+          client_secret: "REPLACE_WITH_FACEBOOK_CLIENT_SECRET"
+          redirect_url: "https://api.puchi.io.vn/auth/callback/facebook"
+        tiktok:
+          client_id: "REPLACE_WITH_TIKTOK_CLIENT_ID"
+          client_secret: "REPLACE_WITH_TIKTOK_CLIENT_SECRET"
+          redirect_url: "https://api.puchi.io.vn/auth/callback/tiktok"
     data:
       database:
         source: "postgres://puchi:puchi-db-prod@pg-puchi-rw.puchi-db.svc.cluster.local:5432/puchi?sslmode=disable&search_path=auth"
