@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
         - name: media
-          image: ghcr.io/puchidemy/puchi-media:git-41e0405
+          image: ghcr.io/puchidemy/puchi-media:git-d8f0ae5
           envFrom:
             - secretRef:
                 name: media-r2-credentials
